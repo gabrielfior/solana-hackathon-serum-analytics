@@ -8,6 +8,8 @@ from fastapi_utils.session import FastAPISessionMaker
 from fastapi_utils.tasks import repeat_every
 import pathlib
 
+from server.fetch_serum import SerumFetcher
+
 dir_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))
 print ('dir', dir_path)
 load_dotenv(dir_path.joinpath('.env'))
@@ -20,12 +22,12 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-@repeat_every(seconds=10)  # 1 hour
+@repeat_every(seconds=60)  # 1 hour
 def fetch_serum_order_book() -> None:
-    print ('entered')
     print (datetime.datetime.now())
     with sessionmaker.context_session() as db:
         engine = db.get_bind()
+        fs = SerumFetcher()
         df = pd.DataFrame(dict(prices=[1],index=[1]))
         df.to_sql('dummy_table2',engine, if_exists='append')
         print ('wrote to db')
