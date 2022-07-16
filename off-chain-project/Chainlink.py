@@ -1,17 +1,17 @@
 from chainlink_feeds.chainlink_feeds import ChainlinkFeeds
 import matplotlib.pyplot as plt
+from matplotlib import style
 import pandas as pd
 
+
+# Chainlink subgraph.
 cf = ChainlinkFeeds(output_format='pandas')
-data = cf.get_daily_candle(pair='eth/usd')
-data['closePrice'] = data['closePrice'].astype(float)
-data['averagePrice'] = data['averagePrice'].astype(float)
-data['openPrice'] = data['openPrice'].astype(float)
 
-
+# Data returned by the subgraph
+data = cf.get_hourly_candle()
 data.index = pd.to_datetime(data.index, unit='s')
 
 
-print(data["averagePrice"].plot())
-print(data["closePrice"].plot())
-print(data["openPrice"].plot())
+data['closePrice'] = data['closePrice'].astype(float)
+data['averagePrice'] = data['averagePrice'].astype(float)
+data['openPrice'] = data['openPrice'].astype(float)
