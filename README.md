@@ -12,3 +12,14 @@ Tasks:
   - Fetch continously
   - Store in DB (maybe Redis, maybe Postgres online)
 - Plotting (use Streamlit + https://github.com/matplotlib/mplfinance#usage)
+
+=================
+### Connecting to DB
+```
+import sqlalchemy
+import load_dotenv
+import os
+
+load_dotenv('./env')
+engine = sqlalchemy.create_engine(os.environ['db_url'])
+```
