@@ -1,10 +1,14 @@
 
 import asyncio
+import nest_asyncio
+from unsync import unsync
+
 from pythclient.pythaccounts import PythPriceAccount, PythPriceStatus
 from pythclient.solana import SolanaClient, SolanaPublicKey, SOLANA_DEVNET_HTTP_ENDPOINT, SOLANA_DEVNET_WS_ENDPOINT
 
 
-async def write_live_price_in_db():
+@unsync
+async def get_price():
 
     # devnet https://pyth.network/price-feeds/?cluster=devnet#Crypto.SOL/USD
     # PAIR : SOL/USD
@@ -18,7 +22,7 @@ async def write_live_price_in_db():
 
     await price.update()
 
-    price_status = price.aggreagate_price_status
+    price_status = price.aggregate_price_status
     if price_status == PythPriceStatus.TRADING:
         # Sample output : "SOL/USD is  ... +/- ... "
         print("SOL/USD is", price.aggregate_price, "±",
@@ -28,7 +32,7 @@ async def write_live_price_in_db():
 
     await solana_client.close()
 
-asyncio.run(write_live_price_in_db())
+print(get_price().result())
 
 # ToDo - Fetch live price (from Pyth) and write into DB
 # sqlalchemy.create_engine(db_url)
