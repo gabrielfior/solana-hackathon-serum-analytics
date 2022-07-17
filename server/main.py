@@ -17,16 +17,15 @@ load_dotenv(dir_path.joinpath('.env'))
 database_uri = os.environ['db_url']
 sessionmaker = FastAPISessionMaker(database_uri)
 
-app = FastAPI()
-
-
+app = FastAPI(debug=True)
 
 @app.on_event("startup")
-@repeat_every(seconds=60)  # 1 hour
+@repeat_every(seconds=60*5)  # 1 hour
 def fetch_serum_order_book() -> None:
     print (datetime.datetime.now())
     with sessionmaker.context_session() as db:
         engine = db.get_bind()
+
         fs = SerumFetcher()
         df = pd.DataFrame(dict(prices=[1],index=[1]))
         df.to_sql('dummy_table2',engine, if_exists='append')
