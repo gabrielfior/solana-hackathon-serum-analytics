@@ -1,10 +1,30 @@
 
 import asyncio
-import nest_asyncio
 from unsync import unsync
-
 from pythclient.pythaccounts import PythPriceAccount, PythPriceStatus
 from pythclient.solana import SolanaClient, SolanaPublicKey, SOLANA_DEVNET_HTTP_ENDPOINT, SOLANA_DEVNET_WS_ENDPOINT
+
+# SQLAlchemy
+from sqlalchemy import declarative_base
+from sqlalchemy import Column, String, DateTime, Integer
+
+Base = declarative_base()
+
+"""
+
+class User 
+    id int 
+    username str
+    email str 
+    data_creation datetime
+
+"""
+
+
+class User(Base):
+
+    __tablename__ = 'users'
+    id =
 
 
 @unsync
