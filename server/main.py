@@ -7,7 +7,6 @@ import pandas as pd
 from fastapi_utils.session import FastAPISessionMaker
 from fastapi_utils.tasks import repeat_every
 import pathlib
-
 from server.fetch_serum import SerumFetcher
 
 dir_path = pathlib.Path(os.path.dirname(os.path.realpath(__file__)))

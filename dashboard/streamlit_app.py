@@ -1,6 +1,9 @@
+from io import BytesIO
+
 import streamlit as st
+
+st.set_page_config(layout="wide")
 from dotenv import load_dotenv
-from matplotlib import pyplot as plt
 
 from utils import *
 
@@ -8,17 +11,19 @@ load_dotenv()
 import os
 from sqlalchemy import create_engine
 
-
 st.title('Serum Analytics Dashboard')
+
 
 @st.experimental_singleton
 def init_connection():
     engine = create_engine(os.environ['db_url'])
     return engine.connect()
 
+
 @st.cache(suppress_st_warning=True, ttl=120)
 def plot_bid_asks(orders, market_names, price):
-    return plot_bid_ask_spread(orders, market_names, price)
+    return get_bid_ask_spread_data(orders, market_names, 0.9)
+
 
 @st.experimental_memo(suppress_st_warning=True, ttl=120)
 def get_orders_cache():
@@ -26,30 +31,42 @@ def get_orders_cache():
     return get_orders(conn)
 
 
-
-
-market_names = ['BTC/USDC', 'BTC/USDT']
-
 orders = get_orders_cache()
 
 selected_market_names = st.multiselect(
-     'Select markets to plot',
-     (market_names))
+    'Select markets to plot',
+    (orders.market_name.unique().tolist()))
 
-d = plot_bid_asks(orders, market_names, 21000)
+d = plot_bid_asks(orders, selected_market_names, 21000)
 
+#########################
 
 ### plotting
-price = 21000
-
+median_price = get_median_price(orders, selected_market_names)
+#price = 21000
 fig = plt.figure(figsize=(16, 9))
-ax = fig.add_subplot(111)
-for market_name in selected_market_names:
-    ax.plot(d[market_name]['buys_x'],d[market_name]['buys_y'], '-', label=f'Bid - {market_name}', drawstyle="steps", linewidth=2)
-    ax.plot(d[market_name]['sales_x'],d[market_name]['sales_y'], '-', label=f'Bid - {market_name}', drawstyle="steps", linewidth=2)
+make_plot(fig, selected_market_names, d, median_price)
+# st.pyplot(fig)
 
-plt.axvline(price, linestyle='--', linewidth=1., color='gray')
-plt.legend(loc='lower right')
-ax.set_xlabel('Price (USD)')
-ax.set_ylabel('Volume (USD)')
-st.pyplot(fig)
+plt.tight_layout()
+# plt.show()
+
+# workaround to control fig size
+buf = BytesIO()
+plt.savefig(buf, format="png")
+st.subheader('Order book aggregated width')
+st.image(buf, width=1200)
+
+##### plot orders
+col1, col2 = st.columns(2)
+orders_to_display = orders[orders.market_name.isin(selected_market_names)]
+print(f'med {median_price}')
+
+with col1:
+    st.subheader('Bids')
+    st.dataframe(orders_to_display[orders_to_display.is_buy == True].sort_values('price',
+                                                                                 ascending=False))
+with col2:
+    st.subheader('Asks')
+    st.dataframe(orders_to_display[orders_to_display.is_buy == False].sort_values('price',
+                                                                                  ascending=True))
